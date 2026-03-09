@@ -2,7 +2,6 @@ import Link from "next/link";
 import { Newspaper } from "lucide-react";
 import { blogPosts as fallbackBlogPosts } from "@/data/blog";
 import { isCmsConfigured, listPublishedArticles } from "@/lib/cms-client";
-import NewsletterSignup from "@/components/blog/NewsletterSignup";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -189,7 +188,6 @@ export default async function BlogPage({ searchParams }: { searchParams: SearchP
           </div>
         )}
 
-        <NewsletterSignup />
       </div>
     </div>
   );

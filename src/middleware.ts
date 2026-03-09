@@ -20,8 +20,10 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // Editors can only access blog management. Everything else stays admin-only.
-  if (session.role === "writer" && !pathname.startsWith("/sanctuary/blogs")) {
+  // Editors can only access their blog workspace and profile page.
+  const isEditorAllowedPath =
+    pathname.startsWith("/sanctuary/blogs") || pathname.startsWith("/sanctuary/profile");
+  if (session.role === "writer" && !isEditorAllowedPath) {
     const writerHome = new URL("/sanctuary/blogs", req.url);
     return NextResponse.redirect(writerHome);
   }

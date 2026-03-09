@@ -173,16 +173,7 @@ export default function SanctuaryBlogsPage() {
         throw new Error(payload?.error ?? "Failed to save blog post.");
       }
 
-      const newsletterNote =
-        payload?.newsletterTriggered && typeof payload?.newsletterSent === "number"
-          ? ` Newsletter sent to ${payload.newsletterSent} subscriber${payload.newsletterSent === 1 ? "" : "s"}.`
-          : "";
-      const newsletterWarning =
-        typeof payload?.newsletterWarning === "string" && payload.newsletterWarning
-          ? ` ${payload.newsletterWarning}`
-          : "";
-
-      setStatus(`${editingId ? "Blog post updated." : "Blog post created."}${newsletterNote}${newsletterWarning}`);
+      setStatus(editingId ? "Blog post updated." : "Blog post created.");
 
       resetForm();
       await refreshArticles();
@@ -239,14 +230,16 @@ export default function SanctuaryBlogsPage() {
             <p className="text-sm text-[var(--color-text-muted)] mt-2">
               Create blog posts, add images, and organize by type/author.
             </p>
-            <p className="text-xs text-[var(--color-text-muted)] mt-1">
-              When a post is published for the first time, the email blog letter is sent automatically.
-            </p>
           </div>
           <div className="flex gap-2">
             <span className="px-3 py-1.5 rounded-full text-xs font-medium bg-[var(--color-cream)]">
               {session?.role === "writer" ? "Editor Access" : "Admin Access"}
             </span>
+            {session?.role === "writer" && (
+              <Link href="/sanctuary/profile" className="px-3 py-2 rounded-lg border border-[var(--color-border)] text-sm">
+                Edit Profile
+              </Link>
+            )}
             <Link href="/sanctuary" className="px-3 py-2 rounded-lg border border-[var(--color-border)] text-sm">
               Back to Sanctuary
             </Link>

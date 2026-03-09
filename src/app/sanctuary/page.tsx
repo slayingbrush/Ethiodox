@@ -134,12 +134,17 @@ export default function SanctuaryHomePage() {
             <p className="text-sm text-[var(--color-text-muted)] mb-6">
               Signed in as {session.name ?? "Editor"}. You can create and manage your linked blog posts.
             </p>
-            <Link
-              href="/sanctuary/blogs"
-              className="inline-flex px-4 py-2 rounded-lg bg-[var(--color-primary)] text-white text-sm"
-            >
-              Open Blog Studio
-            </Link>
+            <div className="flex gap-2">
+              <Link
+                href="/sanctuary/blogs"
+                className="inline-flex px-4 py-2 rounded-lg bg-[var(--color-primary)] text-white text-sm"
+              >
+                Open Blog Studio
+              </Link>
+              <Link href="/sanctuary/profile" className="inline-flex px-4 py-2 rounded-lg border border-[var(--color-border)] text-sm">
+                Edit Profile
+              </Link>
+            </div>
           </div>
         ) : (
           <div className="grid md:grid-cols-2 gap-4">
@@ -159,7 +164,7 @@ export default function SanctuaryHomePage() {
             >
               <h2 className="font-serif text-xl font-semibold mb-1">Editors and Access</h2>
               <p className="text-sm text-[var(--color-text-muted)]">
-                Manage editor profiles and send unique blog login credentials automatically.
+                Manage editor profiles and generate unique blog login credentials.
               </p>
             </Link>
 

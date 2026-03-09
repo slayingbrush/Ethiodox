@@ -33,7 +33,6 @@ export interface Editor {
   id: string;
   name: string;
   slug: string;
-  email: string | null;
   bio: string;
   photo_url: string | null;
   links: Record<string, string>;
@@ -198,19 +197,19 @@ export async function listPageViews(days: number) {
 
 export async function listActiveEditors() {
   return cmsFetch<Editor[]>(
-    "/rest/v1/editors?select=id,name,slug,email,bio,photo_url,links,active,created_at&active=eq.true&order=name.asc"
+    "/rest/v1/editors?select=id,name,slug,bio,photo_url,links,active,created_at&active=eq.true&order=name.asc"
   );
 }
 
 export async function listAllEditors() {
   return cmsFetch<Editor[]>(
-    "/rest/v1/editors?select=id,name,slug,email,bio,photo_url,links,active,created_at&order=name.asc"
+    "/rest/v1/editors?select=id,name,slug,bio,photo_url,links,active,created_at&order=name.asc"
   );
 }
 
 export async function getEditorBySlug(slug: string) {
   const rows = await cmsFetch<Editor[]>(
-    `/rest/v1/editors?select=id,name,slug,email,bio,photo_url,links,active,created_at&slug=eq.${encodeURIComponent(slug)}&limit=1`
+    `/rest/v1/editors?select=id,name,slug,bio,photo_url,links,active,created_at&slug=eq.${encodeURIComponent(slug)}&limit=1`
   );
   return rows[0] ?? null;
 }

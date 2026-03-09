@@ -1,5 +1,7 @@
 create extension if not exists pgcrypto;
 
+drop table if exists public.newsletter_subscribers;
+
 create table if not exists public.blog_posts (
   id uuid primary key default gen_random_uuid(),
   title text not null,
@@ -93,7 +95,6 @@ create table if not exists public.editors (
   id uuid primary key default gen_random_uuid(),
   name text not null,
   slug text not null unique,
-  email text unique,
   bio text not null default '',
   photo_url text,
   links jsonb not null default '{}',
@@ -101,8 +102,7 @@ create table if not exists public.editors (
   created_at timestamptz not null default now()
 );
 
-alter table public.editors add column if not exists email text;
-create unique index if not exists editors_email_unique_idx on public.editors (email) where email is not null;
+alter table public.editors drop column if exists email;
 
 alter table public.editors enable row level security;
 
@@ -220,27 +220,3 @@ on public.site_pages for insert with check (true);
 drop policy if exists "site_pages_update_all" on public.site_pages;
 create policy "site_pages_update_all"
 on public.site_pages for update using (true);
-
--- ============================================================
--- Newsletter subscribers
--- ============================================================
-create table if not exists public.newsletter_subscribers (
-  id uuid primary key default gen_random_uuid(),
-  email text not null unique,
-  active boolean not null default true,
-  created_at timestamptz not null default now()
-);
-
-alter table public.newsletter_subscribers enable row level security;
-
-drop policy if exists "newsletter_select_active" on public.newsletter_subscribers;
-create policy "newsletter_select_active"
-on public.newsletter_subscribers for select using (active = true);
-
-drop policy if exists "newsletter_insert_all" on public.newsletter_subscribers;
-create policy "newsletter_insert_all"
-on public.newsletter_subscribers for insert with check (true);
-
-drop policy if exists "newsletter_update_all" on public.newsletter_subscribers;
-create policy "newsletter_update_all"
-on public.newsletter_subscribers for update using (true);

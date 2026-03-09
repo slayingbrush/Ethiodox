@@ -18,17 +18,26 @@ type EditorAccess = {
   editor_id: string;
   active: boolean;
   created_at: string;
-  editors?: { id: string; name: string; slug: string; email: string | null; photo_url: string | null } | null;
+  editors?: { id: string; name: string; slug: string; photo_url: string | null } | null;
 };
 
 const defaultEditorForm = {
   name: "",
-  email: "",
   bio: "",
   linkLabel: "",
   linkUrl: "",
   active: true,
 };
+
+function makeUniqueSlug(base: string, existingSlugs: Set<string>) {
+  if (!existingSlugs.has(base)) return base;
+
+  let index = 2;
+  while (existingSlugs.has(`${base}-${index}`)) {
+    index += 1;
+  }
+  return `${base}-${index}`;
+}
 
 export default function ManageEditorsPage() {
   const [editors, setEditors] = useState<Editor[]>([]);
@@ -39,6 +48,7 @@ export default function ManageEditorsPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
+  const [latestCredentials, setLatestCredentials] = useState<{ username: string; password: string } | null>(null);
 
   async function loadEditors() {
     if (!isCmsConfigured()) {
@@ -95,51 +105,59 @@ export default function ManageEditorsPage() {
     });
     const data = await res.json().catch(() => null);
     if (!res.ok) {
-      if (data?.username && data?.temporaryPassword) {
-        throw new Error(
-          `${data?.error ?? "Failed to provision editor access."} Temporary credentials: ${data.username} / ${data.temporaryPassword}`
-        );
-      }
       throw new Error(data?.error ?? "Failed to provision editor access.");
     }
-    return data;
+    return {
+      username: String(data?.username ?? ""),
+      temporaryPassword: String(data?.temporaryPassword ?? ""),
+      message: typeof data?.message === "string" ? data.message : null,
+    };
   }
 
   async function handleCreateEditor(e: React.FormEvent) {
     e.preventDefault();
     setSubmitting(true);
     setStatus(null);
+    setLatestCredentials(null);
 
     try {
-      const slug = slugify(editorForm.name);
-      if (!slug) throw new Error("Name must contain letters or numbers.");
-      if (!editorForm.email.trim()) throw new Error("Email is required.");
+      const baseSlug = slugify(editorForm.name);
+      if (!baseSlug) throw new Error("Name must contain letters or numbers.");
+      const existingSlugs = new Set(editors.map((editor) => editor.slug));
+      const uniqueSlug = makeUniqueSlug(baseSlug, existingSlugs);
 
       let photo_url: string | null = null;
       if (photo) {
         const ext = photo.name.split(".").pop() ?? "jpg";
-        photo_url = await uploadImage("editor-photos", `${slug}.${ext}`, photo);
+        photo_url = await uploadImage("editor-photos", `${uniqueSlug}.${ext}`, photo);
       }
 
       const createdEditor = await createEditor({
         name: editorForm.name.trim(),
-        slug,
-        email: editorForm.email.trim().toLowerCase(),
+        slug: uniqueSlug,
         bio: editorForm.bio.trim(),
         photo_url,
         links,
         active: editorForm.active,
       });
 
-      await provisionAccess(createdEditor.id, false);
+      const access = await provisionAccess(createdEditor.id, false);
+      setLatestCredentials({
+        username: access.username,
+        password: access.temporaryPassword,
+      });
 
       setEditorForm(defaultEditorForm);
       setLinks({});
       setPhoto(null);
-      setStatus("Editor created. Unique login credentials were generated and emailed automatically.");
+      setStatus(access.message ?? "Editor created. Share the generated credentials manually.");
       await Promise.all([loadEditors(), loadAccessAccounts()]);
     } catch (err) {
-      setStatus(err instanceof Error ? err.message : "Failed to create editor.");
+      if (err instanceof Error && err.message.includes("editors_slug_key")) {
+        setStatus("An editor with that name already exists. Please try again and use a slightly different name.");
+      } else {
+        setStatus(err instanceof Error ? err.message : "Failed to create editor.");
+      }
     } finally {
       setSubmitting(false);
     }
@@ -158,12 +176,13 @@ export default function ManageEditorsPage() {
 
   async function handleResetAccess(editorId: string) {
     try {
+      setLatestCredentials(null);
       const result = await provisionAccess(editorId, true);
-      setStatus(
-        typeof result?.message === "string"
-          ? result.message
-          : "Password reset and credentials emailed."
-      );
+      setLatestCredentials({
+        username: result.username,
+        password: result.temporaryPassword,
+      });
+      setStatus(result.message ?? "Password reset. Share the new credentials manually.");
       await loadAccessAccounts();
     } catch (err) {
       setStatus(err instanceof Error ? err.message : "Failed to reset editor access.");
@@ -202,26 +221,16 @@ export default function ManageEditorsPage() {
         <section className="bg-white border border-[var(--color-border)] rounded-xl p-6 mb-8">
           <h2 className="font-serif text-xl font-semibold mb-4">Add New Editor</h2>
           <p className="text-sm text-[var(--color-text-muted)] mb-4">
-            Creating an editor automatically generates unique login credentials and emails them to that editor.
+            Creating an editor automatically generates unique login credentials for you to share manually.
           </p>
           <form onSubmit={handleCreateEditor} className="grid gap-4">
-            <div className="grid md:grid-cols-2 gap-4">
-              <input
-                value={editorForm.name}
-                onChange={(e) => setEditorForm((p) => ({ ...p, name: e.target.value }))}
-                placeholder="Full name"
-                className="px-3 py-2 rounded-lg border border-[var(--color-border)]"
-                required
-              />
-              <input
-                type="email"
-                value={editorForm.email}
-                onChange={(e) => setEditorForm((p) => ({ ...p, email: e.target.value }))}
-                placeholder="Email address"
-                className="px-3 py-2 rounded-lg border border-[var(--color-border)]"
-                required
-              />
-            </div>
+            <input
+              value={editorForm.name}
+              onChange={(e) => setEditorForm((p) => ({ ...p, name: e.target.value }))}
+              placeholder="Full name"
+              className="px-3 py-2 rounded-lg border border-[var(--color-border)]"
+              required
+            />
             <textarea
               value={editorForm.bio}
               onChange={(e) => setEditorForm((p) => ({ ...p, bio: e.target.value }))}
@@ -284,10 +293,23 @@ export default function ManageEditorsPage() {
               disabled={submitting}
               className="w-fit px-4 py-2 rounded-lg bg-[var(--color-primary)] text-white disabled:opacity-60"
             >
-              {submitting ? "Creating..." : "Create Editor and Send Login"}
+              {submitting ? "Creating..." : "Create Editor + Generate Login"}
             </button>
           </form>
         </section>
+
+        {latestCredentials && (
+          <section className="bg-amber-50 border border-amber-300 text-amber-900 rounded-xl p-6 mb-8">
+            <h2 className="font-serif text-lg font-semibold mb-2">Generated Credentials</h2>
+            <p className="text-sm mb-3">Copy these now and share with the editor manually.</p>
+            <p className="text-sm">
+              <strong>Username:</strong> {latestCredentials.username}
+            </p>
+            <p className="text-sm">
+              <strong>Password:</strong> {latestCredentials.password}
+            </p>
+          </section>
+        )}
 
         <section className="bg-white border border-[var(--color-border)] rounded-xl p-6 mb-8">
           <h2 className="font-serif text-xl font-semibold mb-4">Editor Login Access</h2>
@@ -300,8 +322,7 @@ export default function ManageEditorsPage() {
                   <div>
                     <p className="font-medium">{access.editors?.name ?? access.slug}</p>
                     <p className="text-xs text-[var(--color-text-muted)]">
-                      username: {access.slug} &middot; email: {access.editors?.email ?? "missing"} &middot;{" "}
-                      {access.active ? "Active" : "Inactive"}
+                      username: {access.slug} &middot; {access.active ? "Active" : "Inactive"}
                     </p>
                   </div>
                   <div className="flex gap-3">
@@ -309,7 +330,7 @@ export default function ManageEditorsPage() {
                       onClick={() => handleResetAccess(access.editor_id)}
                       className="text-sm text-[var(--color-primary)] hover:underline"
                     >
-                      Reset Password + Email
+                      Reset Password
                     </button>
                     <button onClick={() => handleRevokeAccess(access.id)} className="text-sm text-red-700 hover:underline">
                       Revoke
@@ -341,7 +362,7 @@ export default function ManageEditorsPage() {
                   <div className="flex-1">
                     <p className="font-medium">{editor.name}</p>
                     <p className="text-xs text-[var(--color-text-muted)]">
-                      {editor.email ?? "No email"} &middot; {editor.active ? "Active" : "Inactive"} &middot; /{editor.slug}
+                      {editor.active ? "Active" : "Inactive"} &middot; /{editor.slug}
                     </p>
                   </div>
                   <button onClick={() => handleDeleteEditor(editor.id)} className="text-sm text-red-700 hover:underline">

@@ -1,12 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifySanctuarySession } from "@/lib/sanctuary-auth";
-import { getConfiguredFromAddress, sendEmail } from "@/lib/email";
 
 const ADMIN_PASSCODE = process.env.ADMIN_PASSCODE ?? "";
 const COOKIE_NAME = "ethiodox_admin_session";
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL?.replace(/\/$/, "");
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
 type Session = {
   role: "admin" | "writer";
@@ -31,10 +29,6 @@ type ArticleRow = BlogPayload & {
   created_at: string;
   updated_at: string;
   editors?: { name: string; slug: string } | null;
-};
-
-type NewsletterSubscriber = {
-  email: string;
 };
 
 function buildHeaders(extra?: HeadersInit): HeadersInit {
@@ -78,57 +72,6 @@ async function getArticleById(id: string) {
     `/rest/v1/articles?select=id,title,slug,category,excerpt,content,editor_id,tags,cover_image_url,published,created_at,updated_at,editors(name,slug)&id=eq.${encodeURIComponent(id)}&limit=1`
   );
   return rows[0] ?? null;
-}
-
-async function listActiveSubscribers() {
-  return cmsFetch<NewsletterSubscriber[]>(
-    "/rest/v1/newsletter_subscribers?select=email&active=eq.true"
-  );
-}
-
-async function sendNewsletterEmail(post: ArticleRow) {
-  const subscribers = await listActiveSubscribers();
-  if (subscribers.length === 0) return 0;
-  const fromAddressRaw = getConfiguredFromAddress();
-  const fromAddressMatch = fromAddressRaw.match(/<([^>]+)>/);
-  const fromAddress = fromAddressMatch?.[1] ?? fromAddressRaw;
-
-  const postUrl = `${SITE_URL.replace(/\/$/, "")}/blog/${post.slug}`;
-  const subject = `${post.title} | Ethiodox Blog`;
-  const plainText = `${post.title}
-
-${post.excerpt}
-
-Read: ${postUrl}
-`;
-
-  const html = `
-    <div style="font-family:Arial,Helvetica,sans-serif;line-height:1.6;color:#1a1a1a;max-width:680px">
-      <h1 style="margin:0 0 12px 0;font-size:28px">${post.title}</h1>
-      <p style="margin:0 0 8px 0;color:#7a6f58;text-transform:uppercase;font-size:12px;letter-spacing:1px">${post.category}</p>
-      <p style="font-size:16px;margin:0 0 18px 0">${post.excerpt}</p>
-      <a href="${postUrl}" style="display:inline-block;background:#183A5A;color:#fff;text-decoration:none;padding:12px 18px;border-radius:8px;font-weight:600">Read Full Blog Post</a>
-      <hr style="margin:26px 0;border:none;border-top:1px solid #e5e5e5" />
-      <p style="font-size:12px;color:#666">You received this because you subscribed to Ethiodox blog updates.</p>
-    </div>
-  `;
-
-  let sent = 0;
-  for (const subscriber of subscribers) {
-    await sendEmail({
-      to: subscriber.email,
-      subject,
-      html,
-      text: plainText,
-      headers: {
-        "List-Unsubscribe": `<mailto:${fromAddress}?subject=unsubscribe>`,
-      },
-    });
-
-    sent += 1;
-  }
-
-  return sent;
 }
 
 export async function POST(req: NextRequest) {
@@ -176,28 +119,9 @@ export async function POST(req: NextRequest) {
 
     if (!current) throw new Error("Failed to save blog post.");
 
-    const shouldSendNewsletter =
-      current.published && (mode === "create" || (previous && previous.published === false));
-
-    let newsletterSent = 0;
-    let newsletterWarning: string | null = null;
-    if (shouldSendNewsletter) {
-      try {
-        newsletterSent = await sendNewsletterEmail(current);
-      } catch (newsletterError) {
-        newsletterWarning =
-          newsletterError instanceof Error
-            ? newsletterError.message
-            : "Blog saved, but newsletter delivery failed.";
-      }
-    }
-
     return NextResponse.json({
       ok: true,
       blog: current,
-      newsletterSent,
-      newsletterTriggered: shouldSendNewsletter,
-      newsletterWarning,
     });
   } catch (err) {
     return NextResponse.json(

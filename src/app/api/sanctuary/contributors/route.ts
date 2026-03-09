@@ -5,13 +5,11 @@ import {
   normalizeContributorLogin,
   verifySanctuarySession,
 } from "@/lib/sanctuary-auth";
-import { sendEmail } from "@/lib/email";
 
 const ADMIN_PASSCODE = process.env.ADMIN_PASSCODE ?? "";
 const COOKIE_NAME = "ethiodox_admin_session";
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL?.replace(/\/$/, "");
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
 type ContributorRow = {
   id: string;
@@ -21,14 +19,13 @@ type ContributorRow = {
   can_publish: boolean;
   active: boolean;
   created_at: string;
-  editors?: { id: string; name: string; slug: string; email: string | null; photo_url: string | null } | null;
+  editors?: { id: string; name: string; slug: string; photo_url: string | null } | null;
 };
 
 type EditorRow = {
   id: string;
   name: string;
   slug: string;
-  email: string | null;
   active: boolean;
 };
 
@@ -75,14 +72,14 @@ function generatePassword(length = 14) {
 
 async function getEditor(editorId: string) {
   const rows = await cmsFetch<EditorRow[]>(
-    `/rest/v1/editors?select=id,name,slug,email,active&id=eq.${encodeURIComponent(editorId)}&limit=1`
+    `/rest/v1/editors?select=id,name,slug,active&id=eq.${encodeURIComponent(editorId)}&limit=1`
   );
   return rows[0] ?? null;
 }
 
 async function getContributorByEditor(editorId: string) {
   const rows = await cmsFetch<ContributorRow[]>(
-    `/rest/v1/article_contributors?select=id,name,slug,editor_id,can_publish,active,created_at,editors(id,name,slug,email,photo_url)&editor_id=eq.${encodeURIComponent(editorId)}&limit=1`
+    `/rest/v1/article_contributors?select=id,name,slug,editor_id,can_publish,active,created_at,editors(id,name,slug,photo_url)&editor_id=eq.${encodeURIComponent(editorId)}&limit=1`
   );
   return rows[0] ?? null;
 }
@@ -108,47 +105,6 @@ async function generateUniqueUsername(editorSlug: string) {
   return `${base}-${Date.now()}`;
 }
 
-async function sendCredentialsEmail(input: {
-  toEmail: string;
-  name: string;
-  username: string;
-  password: string;
-}) {
-  const loginUrl = `${SITE_URL.replace(/\/$/, "")}/sanctuary`;
-  const subject = "Your Ethiodox Blog Editor Login";
-  const text = `Hi ${input.name},
-
-Your editor account has been created.
-
-Login URL: ${loginUrl}
-Username: ${input.username}
-Password: ${input.password}
-
-For security, please log in and start using it right away.
-`;
-
-  const html = `
-    <div style="font-family:Arial,Helvetica,sans-serif;line-height:1.6;color:#1a1a1a;max-width:640px">
-      <h2 style="margin-bottom:12px">Your Ethiodox Blog Editor Access</h2>
-      <p>Hi ${input.name},</p>
-      <p>Your editor account has been created. Use the login info below:</p>
-      <div style="background:#f8f6ef;padding:16px;border-radius:10px;border:1px solid #e8e0ca;margin:16px 0">
-        <p style="margin:0 0 8px 0"><strong>Login URL:</strong> <a href="${loginUrl}">${loginUrl}</a></p>
-        <p style="margin:0 0 8px 0"><strong>Username:</strong> ${input.username}</p>
-        <p style="margin:0"><strong>Password:</strong> ${input.password}</p>
-      </div>
-      <p style="margin-top:18px">For security, only this account can access your editor workspace.</p>
-    </div>
-  `;
-
-  await sendEmail({
-    to: input.toEmail,
-    subject,
-    html,
-    text,
-  });
-}
-
 export async function GET(req: NextRequest) {
   if (!(await requireAdmin(req))) {
     return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
@@ -156,7 +112,7 @@ export async function GET(req: NextRequest) {
 
   try {
     const rows = await cmsFetch<ContributorRow[]>(
-      "/rest/v1/article_contributors?select=id,name,slug,editor_id,can_publish,active,created_at,editors(id,name,slug,email,photo_url)&order=created_at.desc"
+      "/rest/v1/article_contributors?select=id,name,slug,editor_id,can_publish,active,created_at,editors(id,name,slug,photo_url)&order=created_at.desc"
     );
     return NextResponse.json(rows);
   } catch (err) {
@@ -188,9 +144,6 @@ export async function POST(req: NextRequest) {
     const editor = await getEditor(editorId);
     if (!editor) return NextResponse.json({ error: "Editor not found." }, { status: 404 });
     if (!editor.active) return NextResponse.json({ error: "Editor is inactive." }, { status: 400 });
-    if (!editor.email) {
-      return NextResponse.json({ error: "Editor must have an email before access can be provisioned." }, { status: 400 });
-    }
 
     const existing = await getContributorByEditor(editorId);
     if (existing && !rotatePassword) {
@@ -230,30 +183,13 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    try {
-      await sendCredentialsEmail({
-        toEmail: editor.email,
-        name: editor.name,
-        username,
-        password: temporaryPassword,
-      });
-    } catch (emailError) {
-      return NextResponse.json(
-        {
-          error: emailError instanceof Error ? emailError.message : "Failed to send credentials email.",
-          username,
-          temporaryPassword,
-          note: "Credentials were generated, but delivery failed. Fix email config and reset password to resend.",
-        },
-        { status: 500 }
-      );
-    }
-
     return NextResponse.json({
       ok: true,
       username,
-      email: editor.email,
-      message: rotatePassword ? "Password reset and email sent." : "Editor access created and email sent.",
+      temporaryPassword,
+      message: rotatePassword
+        ? "Password reset. Share the new credentials with the editor."
+        : "Editor access created. Share these credentials with the editor.",
     });
   } catch (err) {
     return NextResponse.json(
