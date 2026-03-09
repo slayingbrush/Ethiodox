@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Newspaper } from "lucide-react";
 import { blogPosts } from "@/data/blog";
+import LiveBlogFeed from "@/components/blog/LiveBlogFeed";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -26,7 +27,12 @@ export default function BlogPage() {
           </p>
         </div>
 
+        <LiveBlogFeed />
+
         {/* Blog Posts */}
+        <h2 className="font-serif text-2xl font-bold text-[var(--color-primary)] mb-4">
+          Library Posts
+        </h2>
         <div className="space-y-8">
           {blogPosts.map((post) => (
             <Link
