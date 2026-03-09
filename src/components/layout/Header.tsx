@@ -11,11 +11,10 @@ const navLinks = [
   { href: "/liturgy", label: "Divine Liturgy" },
   { href: "/saints", label: "Saints" },
   { href: "/defend", label: "Defend the Faith" },
-  { href: "/articles", label: "Articles" },
   { href: "/blog", label: "Blog" },
+  { href: "/editors", label: "Editors" },
   { href: "/updates", label: "Updates" },
   { href: "/about", label: "About" },
-  { href: "/admin", label: "Admin" },
 ];
 
 export default function Header() {

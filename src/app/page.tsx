@@ -13,12 +13,12 @@ import {
 } from "lucide-react";
 import { lessons } from "@/data/lessons";
 import { prayers } from "@/data/prayers";
-import { articles } from "@/data/articles";
+import { blogPosts } from "@/data/blog";
 
 export default function HomePage() {
   const featuredLessons = lessons.slice(0, 3);
   const featuredPrayers = prayers.slice(0, 4);
-  const featuredArticles = articles.slice(0, 3);
+  const featuredBlogs = blogPosts.slice(0, 3);
 
   return (
     <>
@@ -234,30 +234,30 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Featured Articles */}
+      {/* Featured Blog */}
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="flex items-center justify-between mb-10">
             <div>
               <h2 className="font-serif text-3xl font-bold text-[var(--color-primary)]">
-                Articles
+                Blog
               </h2>
               <p className="text-[var(--color-text-muted)] mt-2">
-                Guides and reflections on the Orthodox life
+                Educational and practical posts on Orthodox life
               </p>
             </div>
             <Link
-              href="/articles"
+              href="/blog"
               className="hidden sm:flex items-center gap-1 text-[var(--color-primary)] font-medium hover:underline"
             >
-              View all articles <ChevronRight className="w-4 h-4" />
+              View all blog posts <ChevronRight className="w-4 h-4" />
             </Link>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {featuredArticles.map((article) => (
+            {featuredBlogs.map((article) => (
               <Link
                 key={article.slug}
-                href={`/articles/${article.slug}`}
+                href={`/blog/${article.slug}`}
                 className="group block bg-white border border-[var(--color-border)] rounded-xl p-6 hover:shadow-lg hover:border-[var(--color-gold)] transition-all"
               >
                 <span className="text-xs font-medium text-[var(--color-gold)] uppercase tracking-wider">

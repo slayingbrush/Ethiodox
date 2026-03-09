@@ -15,8 +15,8 @@ const footerLinks = {
   ],
   Explore: [
     { href: "/defend", label: "Defend the Faith" },
-    { href: "/articles", label: "Articles" },
     { href: "/blog", label: "Blog" },
+    { href: "/editors", label: "Editors" },
     { href: "/about", label: "About" },
   ],
 };

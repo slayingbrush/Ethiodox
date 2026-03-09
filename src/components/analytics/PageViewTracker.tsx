@@ -17,7 +17,7 @@ export default function PageViewTracker() {
 
   useEffect(() => {
     if (!isCmsConfigured() || !pathname) return;
-    if (pathname.startsWith("/admin")) return;
+    if (pathname.startsWith("/admin") || pathname.startsWith("/sanctuary")) return;
 
     const storedSession = localStorage.getItem(SESSION_KEY);
     const sessionId = storedSession ?? generateSessionId();

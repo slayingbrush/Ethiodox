@@ -85,3 +85,162 @@ create policy "events_select_all"
 on public.page_events
 for select
 using (true);
+
+-- ============================================================
+-- Editors (authors who can write articles)
+-- ============================================================
+create table if not exists public.editors (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  slug text not null unique,
+  email text unique,
+  bio text not null default '',
+  photo_url text,
+  links jsonb not null default '{}',
+  active boolean not null default true,
+  created_at timestamptz not null default now()
+);
+
+alter table public.editors add column if not exists email text;
+create unique index if not exists editors_email_unique_idx on public.editors (email) where email is not null;
+
+alter table public.editors enable row level security;
+
+drop policy if exists "editors_select_active" on public.editors;
+create policy "editors_select_active"
+on public.editors for select using (active = true);
+
+drop policy if exists "editors_insert_all" on public.editors;
+create policy "editors_insert_all"
+on public.editors for insert with check (true);
+
+drop policy if exists "editors_update_all" on public.editors;
+create policy "editors_update_all"
+on public.editors for update using (true);
+
+drop policy if exists "editors_delete_all" on public.editors;
+create policy "editors_delete_all"
+on public.editors for delete using (true);
+
+-- ============================================================
+-- CMS Articles (replaces static article data)
+-- ============================================================
+create table if not exists public.articles (
+  id uuid primary key default gen_random_uuid(),
+  title text not null,
+  slug text not null unique,
+  category text not null,
+  excerpt text not null,
+  content text not null,
+  editor_id uuid references public.editors(id) on delete set null,
+  tags text[] not null default '{}',
+  cover_image_url text,
+  published boolean not null default true,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists articles_editor_id_idx on public.articles (editor_id);
+create index if not exists articles_category_idx on public.articles (category);
+create index if not exists articles_created_at_idx on public.articles (created_at desc);
+
+alter table public.articles enable row level security;
+
+drop policy if exists "articles_select_published" on public.articles;
+create policy "articles_select_published"
+on public.articles for select using (published = true);
+
+drop policy if exists "articles_insert_all" on public.articles;
+create policy "articles_insert_all"
+on public.articles for insert with check (true);
+
+drop policy if exists "articles_update_all" on public.articles;
+create policy "articles_update_all"
+on public.articles for update using (true);
+
+drop policy if exists "articles_delete_all" on public.articles;
+create policy "articles_delete_all"
+on public.articles for delete using (true);
+
+-- ============================================================
+-- Contributor access (editor logins for Sanctuary blog mode)
+-- ============================================================
+create table if not exists public.article_contributors (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  slug text not null unique,
+  editor_id uuid not null references public.editors(id) on delete cascade,
+  passcode_hash text not null,
+  can_publish boolean not null default true,
+  active boolean not null default true,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists article_contributors_editor_id_idx on public.article_contributors (editor_id);
+
+alter table public.article_contributors enable row level security;
+
+drop policy if exists "contributors_select_all" on public.article_contributors;
+create policy "contributors_select_all"
+on public.article_contributors for select using (true);
+
+drop policy if exists "contributors_insert_all" on public.article_contributors;
+create policy "contributors_insert_all"
+on public.article_contributors for insert with check (true);
+
+drop policy if exists "contributors_update_all" on public.article_contributors;
+create policy "contributors_update_all"
+on public.article_contributors for update using (true);
+
+drop policy if exists "contributors_delete_all" on public.article_contributors;
+create policy "contributors_delete_all"
+on public.article_contributors for delete using (true);
+
+-- ============================================================
+-- Editable site pages (About, etc.)
+-- ============================================================
+create table if not exists public.site_pages (
+  id uuid primary key default gen_random_uuid(),
+  page_key text not null unique,
+  title text not null,
+  content text not null,
+  updated_at timestamptz not null default now()
+);
+
+alter table public.site_pages enable row level security;
+
+drop policy if exists "site_pages_select_all" on public.site_pages;
+create policy "site_pages_select_all"
+on public.site_pages for select using (true);
+
+drop policy if exists "site_pages_upsert_all" on public.site_pages;
+create policy "site_pages_upsert_all"
+on public.site_pages for insert with check (true);
+
+drop policy if exists "site_pages_update_all" on public.site_pages;
+create policy "site_pages_update_all"
+on public.site_pages for update using (true);
+
+-- ============================================================
+-- Newsletter subscribers
+-- ============================================================
+create table if not exists public.newsletter_subscribers (
+  id uuid primary key default gen_random_uuid(),
+  email text not null unique,
+  active boolean not null default true,
+  created_at timestamptz not null default now()
+);
+
+alter table public.newsletter_subscribers enable row level security;
+
+drop policy if exists "newsletter_select_active" on public.newsletter_subscribers;
+create policy "newsletter_select_active"
+on public.newsletter_subscribers for select using (active = true);
+
+drop policy if exists "newsletter_insert_all" on public.newsletter_subscribers;
+create policy "newsletter_insert_all"
+on public.newsletter_subscribers for insert with check (true);
+
+drop policy if exists "newsletter_update_all" on public.newsletter_subscribers;
+create policy "newsletter_update_all"
+on public.newsletter_subscribers for update using (true);
