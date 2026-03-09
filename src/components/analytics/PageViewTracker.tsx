@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { insertPageView, isCmsConfigured } from "@/lib/cms-client";
 
 const SESSION_KEY = "ethiodox_session_id";
@@ -12,8 +12,6 @@ function generateSessionId() {
 
 export default function PageViewTracker() {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const query = searchParams.toString();
 
   useEffect(() => {
     if (!isCmsConfigured() || !pathname) return;
@@ -25,7 +23,8 @@ export default function PageViewTracker() {
       localStorage.setItem(SESSION_KEY, sessionId);
     }
 
-    const path = query ? `${pathname}?${query}` : pathname;
+    const query = typeof window !== "undefined" ? window.location.search : "";
+    const path = query ? `${pathname}${query}` : pathname;
 
     insertPageView({
       path,
@@ -35,7 +34,7 @@ export default function PageViewTracker() {
     }).catch(() => {
       // Keep analytics fire-and-forget so navigation never blocks.
     });
-  }, [pathname, query]);
+  }, [pathname]);
 
   return null;
 }
