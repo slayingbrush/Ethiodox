@@ -1,33 +1,21 @@
-"use client";
-
 import Link from "next/link";
-import { useState } from "react";
 import { ChevronLeft } from "lucide-react";
 import { prayers, getPrayer } from "@/data/prayers";
 import { notFound } from "next/navigation";
-import { use } from "react";
+import PrayerLanguagePanel from "./PrayerLanguagePanel";
 
-type Language = "english" | "amharicTransliteration" | "amharic" | "geez";
+type Props = { params: Promise<{ slug: string }> };
 
-const languages: { key: Language; label: string }[] = [
-  { key: "english", label: "English" },
-  { key: "amharicTransliteration", label: "Amharic (Transliteration)" },
-  { key: "amharic", label: "Amharic" },
-  { key: "geez", label: "Ge'ez" },
-];
+export async function generateStaticParams() {
+  return prayers.map((p) => ({ slug: p.slug }));
+}
 
-export default function PrayerPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
-  const { slug } = use(params);
+export default async function PrayerPage({ params }: Props) {
+  const { slug } = await params;
   const prayer = getPrayer(slug);
-  const [lang, setLang] = useState<Language>("english");
 
   if (!prayer) notFound();
 
-  const currentIndex = prayers.findIndex((p) => p.slug === slug);
   const relatedPrayers = prayers
     .filter((p) => p.category === prayer.category && p.slug !== slug)
     .slice(0, 3);
@@ -54,33 +42,7 @@ export default function PrayerPage({
           </h1>
         </div>
 
-        {/* Language Selector */}
-        <div className="flex flex-wrap gap-2 mb-8">
-          {languages.map((l) => (
-            <button
-              key={l.key}
-              onClick={() => setLang(l.key)}
-              className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-                lang === l.key
-                  ? "bg-[var(--color-primary)] text-white"
-                  : "bg-[var(--color-cream)] text-[var(--color-text-muted)] hover:bg-[var(--color-cream-dark)]"
-              }`}
-            >
-              {l.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Prayer Text */}
-        <div className="bg-[var(--color-cream)] rounded-xl p-8 mb-8">
-          <div
-            className={`prayer-text ${
-              lang === "geez" ? "prayer-text-geez" : ""
-            }`}
-          >
-            {prayer[lang]}
-          </div>
-        </div>
+        <PrayerLanguagePanel prayer={prayer} />
 
         {/* Description */}
         <div className="mb-8">

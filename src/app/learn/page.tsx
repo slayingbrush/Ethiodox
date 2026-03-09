@@ -5,7 +5,8 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Learn — Orthodox Theology & Practice",
-  description: "Structured lessons on Ethiopian Orthodox Tewahedo theology, Christology, sacraments, and spiritual practice.",
+  description:
+    "Structured lessons on Ethiopian and Oriental Orthodox theology, church history, Christology, sacraments, and spiritual practice.",
 };
 
 export default function LearnPage() {
@@ -23,9 +24,11 @@ export default function LearnPage() {
             </h1>
           </div>
           <p className="text-lg text-[var(--color-text-muted)] leading-relaxed">
-            Explore the depth of Ethiopian Orthodox theology through structured
-            lessons. Each lesson includes Scripture references, common
-            misconceptions addressed, and reflection questions.
+            Explore Ethiopian and Oriental Orthodox theology through structured
+            modules, including foundational doctrine, in-depth church history,
+            and practical Christian life. Each lesson includes Scripture
+            references, common misconceptions addressed, and reflection
+            questions.
           </p>
         </div>
 

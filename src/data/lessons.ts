@@ -465,6 +465,421 @@ The reverence with which Ethiopian Christians approach the Eucharist — removin
       "What steps can you take to better prepare yourself for Holy Communion?",
       "How does the Eucharist connect you to the whole body of Christ — the Church across time and space?",
     ],
+    nextLessonSlug: "scripture-and-tradition",
+  },
+  {
+    id: "6",
+    title: "Scripture and Holy Tradition",
+    slug: "scripture-and-tradition",
+    category: "Scripture and Tradition",
+    difficulty: "intermediate",
+    overview:
+      "How Ethiopian and Oriental Orthodox Christianity receives Scripture inside the living Tradition of the Church, not apart from it.",
+    content: `
+## Scripture in the Life of the Church
+
+Orthodox Christians do not oppose Scripture and Tradition. Scripture is the heart of Tradition, and Tradition is the life in which Scripture is read, prayed, interpreted, and obeyed.
+
+### What Holy Tradition Means
+
+Holy Tradition is the apostolic faith handed down in:
+
+- Scripture
+- Liturgy
+- Creeds
+- Councils
+- Patristic teaching
+- Canonical life
+- The witness of saints and martyrs
+
+Tradition is not human custom added to the Gospel. It is the Church's faithful transmission of the same Gospel through time.
+
+### Why Scripture Needs the Church
+
+The Bible is inspired and true. But private interpretation can produce contradiction and fragmentation. The Ethiopian Orthodox approach is ecclesial:
+
+1. Scripture is read in worship.
+2. Scripture is interpreted with the Fathers.
+3. Scripture is lived in repentance and sacramental life.
+
+### Ethiopian Biblical Heritage
+
+The Ethiopian Church preserves one of the oldest continuous biblical traditions in Christianity. Ge'ez translation, liturgical reading cycles, and feast-day readings all form believers in a biblical worldview.
+
+### Practical Rule for Study
+
+When reading difficult passages:
+
+- Begin with prayer.
+- Read the Church's liturgical context.
+- Compare parallel passages.
+- Check patristic consensus where available.
+- Ask: "How does this call me to holiness?"
+
+The goal is not information only, but transformation.
+    `,
+    scriptureRefs: [
+      "2 Thessalonians 2:15",
+      "2 Timothy 3:16-17",
+      "Acts 8:30-31",
+      "1 Timothy 3:15",
+      "Luke 24:27",
+    ],
+    misconceptions: [
+      {
+        claim: "Tradition means extra rules that were added later.",
+        response:
+          "Orthodox Tradition is not an addition to apostolic faith. It is the way apostolic faith is preserved and lived in the Church.",
+      },
+      {
+        claim: "If you have a Bible, you do not need the Church to understand it.",
+        response:
+          "The same Spirit who inspired Scripture also guides the Church in guarding and interpreting it. Scripture is read most safely within the worshiping body that received it.",
+      },
+    ],
+    reflectionQuestions: [
+      "How has your own Bible reading been shaped by worship?",
+      "What is one passage you should revisit through patristic and liturgical context?",
+      "How can your study become more prayerful and less purely academic?",
+    ],
+    nextLessonSlug: "oriental-orthodox-family",
+  },
+  {
+    id: "7",
+    title: "Oriental Orthodox Family and Ethiopian Distinctives",
+    slug: "oriental-orthodox-family",
+    category: "Oriental Orthodox Theology",
+    difficulty: "intermediate",
+    overview:
+      "A map of the Oriental Orthodox communion and what is especially Ethiopian in theology, worship, and spirituality.",
+    content: `
+## One Family, Many Local Churches
+
+The Ethiopian Orthodox Tewahedo Church belongs to the Oriental Orthodox communion, alongside:
+
+- Coptic Orthodox Church
+- Syriac Orthodox Church
+- Armenian Apostolic Church
+- Eritrean Orthodox Tewahedo Church
+- Malankara (Indian) Orthodox Syriac Church
+
+These churches share the same core Christological confession: one incarnate nature of God the Word, without confusion, change, division, or separation.
+
+### Shared Oriental Orthodox Features
+
+- Strong liturgical continuity with early Christianity
+- Centrality of fasting and ascetic discipline
+- High sacramental theology
+- Deep veneration of saints and martyrs
+- Patristic interpretation of Scripture
+
+### Ethiopian Distinctives
+
+The Ethiopian Church has unique elements that enrich world Christianity:
+
+- Ge'ez liturgical heritage
+- Broad and ancient biblical tradition
+- Extensive fasting calendar
+- Tabot-centered liturgical architecture
+- Rich hymnography and chant tradition
+- Strong monastic witness and local saint traditions
+
+### Unity Without Uniformity
+
+Oriental Orthodox unity is doctrinal and sacramental, not cultural uniformity. Local churches keep their language, music, and discipline while sharing one apostolic faith.
+    `,
+    scriptureRefs: [
+      "Ephesians 4:4-6",
+      "1 Corinthians 12:12-27",
+      "Galatians 3:28",
+      "John 17:21",
+    ],
+    misconceptions: [
+      {
+        claim: "Oriental Orthodox means each church teaches a different faith.",
+        response:
+          "Local practice differs, but the doctrinal center is shared. Diversity of rite is not diversity of faith.",
+      },
+      {
+        claim: "Ethiopian practice is isolated from wider Christian history.",
+        response:
+          "Ethiopian Christianity is deeply rooted in apostolic and patristic history and remains in full communion with sister Oriental Orthodox churches.",
+      },
+    ],
+    reflectionQuestions: [
+      "Which Ethiopian distinctive most helps you understand the Gospel?",
+      "How does unity in faith differ from cultural sameness?",
+      "What can you learn from another Oriental Orthodox church without losing Ethiopian identity?",
+    ],
+    nextLessonSlug: "history-apostolic-to-nicaea",
+  },
+  {
+    id: "8",
+    title: "History Module I: Apostolic Christianity to Nicaea (33-325)",
+    slug: "history-apostolic-to-nicaea",
+    category: "Church History",
+    difficulty: "beginner",
+    overview:
+      "From Pentecost to the first ecumenical council: the apostolic mission, persecution, canon formation, and defense of Christ's divinity.",
+    content: `
+## Stage One: Birth and Expansion
+
+Christianity begins in the resurrection of Christ, the coming of the Holy Spirit at Pentecost, and apostolic mission.
+
+### Core Timeline
+
+1. **33-64**: Apostolic preaching in Jerusalem, Judea, Samaria, and beyond.
+2. **1st century**: Churches planted across the Roman world; Eucharistic worship and episcopal order emerge clearly.
+3. **64-313**: Periodic imperial persecutions; martyrs become teachers of the Church by witness.
+4. **Early 4th century**: Persecution ends under Constantine; public church life expands.
+5. **325**: Council of Nicaea condemns Arianism and confesses the Son as true God.
+
+### Why Nicaea Matters
+
+The question was not abstract: Is Jesus truly God, or a supreme creature? Nicaea answered with precision so salvation would not be reduced.
+
+- If Christ is not truly God, He cannot truly save.
+- If Christ is not truly man, humanity is not truly healed.
+
+### Ethiopian Connection
+
+Ethiopian Christian memory strongly connects early Christianity with Acts 8 and later organized church life through Frumentius (Abba Selama). Whether one studies details critically or devotionally, the Church sees itself as apostolic in identity.
+    `,
+    scriptureRefs: [
+      "Acts 2:1-42",
+      "Acts 8:26-39",
+      "Matthew 28:18-20",
+      "John 1:1",
+      "Colossians 2:9",
+    ],
+    misconceptions: [
+      {
+        claim: "Christian doctrine was invented by councils centuries later.",
+        response:
+          "Councils did not invent new faith; they defended apostolic faith against new distortions.",
+      },
+      {
+        claim: "Early Christianity had no structure, only private belief.",
+        response:
+          "From earliest sources we see bishops, presbyters, deacons, sacraments, and shared worship.",
+      },
+    ],
+    reflectionQuestions: [
+      "Why is martyrdom central to early church identity?",
+      "How does Nicaea protect both worship and salvation?",
+      "What does apostolic continuity mean for your church life today?",
+    ],
+    nextLessonSlug: "history-nicaea-to-chalcedon",
+  },
+  {
+    id: "9",
+    title: "History Module II: Nicaea, Ephesus, Chalcedon, and Oriental Orthodox Continuity (325-700)",
+    slug: "history-nicaea-to-chalcedon",
+    category: "Church History",
+    difficulty: "intermediate",
+    overview:
+      "A focused history of the Christological controversies and how Oriental Orthodox churches understood themselves as preserving Cyrillian orthodoxy.",
+    content: `
+## Stage Two: Christological Clarification
+
+After Nicaea, the Church continued to refine language about Christ's person.
+
+### Councils and Controversies
+
+1. **Nicaea (325)**: Son is consubstantial with the Father.
+2. **Constantinople (381)**: fuller creed language, including clear confession of the Holy Spirit.
+3. **Ephesus (431)**: defends unity of Christ's person and Theotokos language for St. Mary.
+4. **Chalcedon (451)**: formulates Christ "in two natures."
+
+### Why Division Happened
+
+The split between Chalcedonian and non-Chalcedonian churches involved theology, language, politics, and imperial pressure. Oriental Orthodox churches maintained that their confession followed St. Cyril faithfully and rejected both Nestorian division and Eutychian confusion.
+
+### Oriental Orthodox Self-Understanding
+
+Oriental Orthodox churches describe themselves as:
+
+- Apostolic
+- Patristic
+- Liturgical
+- Miaphysite in Cyrillian sense
+
+Modern dialogue has shown that many disputes were intensified by terminology and historical conflict, not always by contradictory faith.
+    `,
+    scriptureRefs: [
+      "John 1:14",
+      "1 Timothy 3:16",
+      "Hebrews 2:14-17",
+      "Philippians 2:5-11",
+    ],
+    misconceptions: [
+      {
+        claim: "The post-Chalcedon divide was only about politics and had no theology.",
+        response:
+          "Politics mattered, but theology was real and deeply consequential. The language used to confess Christ shapes worship and salvation.",
+      },
+      {
+        claim: "Oriental Orthodox churches deny Christ's humanity.",
+        response:
+          "Oriental Orthodox churches explicitly confess Christ as fully divine and fully human in true union.",
+      },
+    ],
+    reflectionQuestions: [
+      "Why is theological language worth defending carefully?",
+      "How can modern Christians learn from past conflicts without repeating them?",
+      "What does fidelity to the Fathers look like in your context?",
+    ],
+    nextLessonSlug: "history-ethiopia-aksum-to-modern",
+  },
+  {
+    id: "10",
+    title: "History Module III: Ethiopian Christianity from Aksum to the Modern Era",
+    slug: "history-ethiopia-aksum-to-modern",
+    category: "Church History",
+    difficulty: "advanced",
+    overview:
+      "An in-depth Ethiopian-focused history: early roots, Aksumite consolidation, monastic expansion, liturgical growth, reform pressures, and modern global presence.",
+    content: `
+## Stage Three: Ethiopian Christian Development
+
+This module tracks major periods in Ethiopian Christian history with a focus on theology, liturgy, and church life.
+
+### 1. Early Foundations
+
+- Apostolic memory linked with Acts 8.
+- Institutional consolidation associated with Frumentius (Abba Selama).
+- Royal support for Christianity within Aksumite civilization.
+
+### 2. Translation, Liturgy, and Formation
+
+- Ge'ez biblical and liturgical culture becomes foundational.
+- Monastic movements shape doctrine, mission, education, and social life.
+- Feast cycles, fasting discipline, and local saints deepen public piety.
+
+### 3. Medieval and Early Modern Pressures
+
+- Internal theological debates and regional political tensions.
+- External contact and pressure from Latin and later Protestant influences.
+- Ongoing effort to preserve Orthodox identity while responding pastorally.
+
+### 4. Modern Era and Global Diaspora
+
+- New educational institutions and publishing efforts.
+- Expanded catechesis in vernacular languages.
+- Growing diaspora communities preserving Ethiopian Orthodox worship globally.
+
+### Why This History Matters
+
+Ethiopian Christian history is not a museum narrative. It is a living continuity of:
+
+- apostolic confession,
+- sacramental life,
+- ascetic discipline,
+- and public witness under changing political realities.
+    `,
+    scriptureRefs: [
+      "Acts 8:26-39",
+      "2 Timothy 2:2",
+      "Psalm 78:4-7",
+      "Hebrews 13:7-8",
+    ],
+    misconceptions: [
+      {
+        claim: "Ethiopian Christianity is a local ethnic religion, not fully catholic.",
+        response:
+          "The Ethiopian Church is locally rooted and universally Christian, confessing the apostolic faith in communion with sister Oriental Orthodox churches.",
+      },
+      {
+        claim: "Tradition means no development.",
+        response:
+          "Orthodox history shows faithful continuity and real development in language, institutions, and mission without abandoning doctrine.",
+      },
+    ],
+    reflectionQuestions: [
+      "Which era of Ethiopian church history most shapes today's church challenges?",
+      "How should historical memory influence mission in diaspora communities?",
+      "What parts of Ethiopian tradition are essential to preserve in your generation?",
+    ],
+    nextLessonSlug: "orthodox-spiritual-life",
+  },
+  {
+    id: "11",
+    title: "Orthodox Spiritual Life: Prayer, Fasting, and Almsgiving",
+    slug: "orthodox-spiritual-life",
+    category: "Christian Life",
+    difficulty: "beginner",
+    overview:
+      "A practical module on daily discipleship in Ethiopian and Oriental Orthodox spirituality.",
+    content: `
+## The Threefold Discipline
+
+Orthodox spiritual life is often summarized through three inseparable practices:
+
+1. Prayer
+2. Fasting
+3. Almsgiving
+
+None of these is optional decoration. Together, they train the heart in communion with Christ.
+
+### Prayer
+
+Prayer is not only asking. It includes:
+
+- praise,
+- thanksgiving,
+- repentance,
+- intercession,
+- silence before God.
+
+The goal is steady remembrance of God across the whole day.
+
+### Fasting
+
+Fasting is not diet culture. It is ascetic medicine:
+
+- healing disordered desires,
+- restoring watchfulness,
+- opening generosity toward others.
+
+Without repentance and mercy, fasting becomes empty ritual.
+
+### Almsgiving
+
+Almsgiving is concrete love. It includes money, time, labor, and hospitality. It is not secondary to theology; it is theology enacted.
+
+### Integration in Ethiopian Practice
+
+Ethiopian Orthodox spirituality joins these disciplines with:
+
+- frequent liturgical participation,
+- confession and Eucharistic preparation,
+- veneration of saints,
+- communal seasons of repentance and joy.
+    `,
+    scriptureRefs: [
+      "Matthew 6:1-18",
+      "Isaiah 58:6-10",
+      "James 2:14-17",
+      "1 Thessalonians 5:17",
+      "Matthew 25:31-46",
+    ],
+    misconceptions: [
+      {
+        claim: "As long as doctrine is right, spiritual discipline is optional.",
+        response:
+          "Orthodoxy is right belief and right worship and right living. Doctrine without ascetic life becomes sterile.",
+      },
+      {
+        claim: "Fasting is legalism and has no value today.",
+        response:
+          "Christ Himself fasted and instructed His disciples to fast. The issue is not whether to fast, but how to fast with humility and love.",
+      },
+    ],
+    reflectionQuestions: [
+      "Which of the three disciplines is weakest in your current life?",
+      "What is one weekly practice you can begin immediately?",
+      "How can your private piety become visible mercy for others?",
+    ],
     nextLessonSlug: null,
   },
 ];

@@ -95,6 +95,33 @@ kibir yante nat, lezelealem. Amen.`,
     tags: ["daily", "foundational", "Jesus"],
   },
   {
+    id: "2b",
+    title: "Hail Mary (After the Lord's Prayer)",
+    slug: "hail-mary-after-lords-prayer",
+    category: "Marian Prayers",
+    english: `O Our Lady, Virgin Saint Mary! In Saint Gabriel's greetings, peace be unto you.
+Holy and pure, O mother of the almighty God! Peace be unto you.
+Blessed are thou amongst women and blessed is the fruit of thy womb.
+Hail Mary, full of grace, the Lord is with thee.
+Pray for us before our Lord Jesus Christ that he may forgive us our sins.`,
+    amharicTransliteration: `Imebétachin Qidist Dingil Mariam hoy! bemelaku beqidus Gebri'el selamta selam inilishalen.
+behasabish dingil nesh. besigashim dingil nesh.
+ye'ashenafee ye'Igzee'abihér inat hoy! selamta lanchee yigebashal.
+kesétoch hulu teleyitesh anchee yetebarekish nesh yemahiÍenish firé yetebareke new.
+Íegan yetemelash hoy! des yibelish Igzee'abihér kanchee gar newina.
+ketewededew lijish kegétachin kemedihaneetachin ke'Eeyesus Kiristos zend yiqirtan lemiñeelin haÊeeatachinin`,
+    amharic: `Imebétachin Qidist Dingil Mariam hoy! bemelaku beqidus Gebri'el selamta selam inilishalen.
+behasabish dingil nesh. besigashim dingil nesh.
+ye'ashenafee ye'Igzee'abihér inat hoy! selamta lanchee yigebashal.
+kesétoch hulu teleyitesh anchee yetebarekish nesh yemahiÍenish firé yetebareke new.
+Íegan yetemelash hoy! des yibelish Igzee'abihér kanchee gar newina.
+ketewededew lijish kegétachin kemedihaneetachin ke'Eeyesus Kiristos zend yiqirtan lemiñeelin haÊeeatachinin`,
+    geez: `O Igzietena Maryam, be-selamte Gebriel, "Selam laki." Buruk anti em-setat, buruk fire kebdiki. O tsemua sega, tseliyi leWeldki, yisir yebelena hatiatena.`,
+    description:
+      "The Hail Mary text listed in your liturgy source (frequently used prayers section, eotcDivineLit.pdf page 173), cross-checked against Tselot-zezeweTerBOOK-English-5.pdf (pages 3-4). The Eritrean Geez source is image-only and should be manually/OCR verified line-by-line.",
+    tags: ["mary", "hail mary", "daily", "intercession"],
+  },
+  {
     id: "3",
     title: "Holy God (Trisagion)",
     slug: "holy-god-trisagion",
