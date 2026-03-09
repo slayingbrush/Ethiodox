@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifySanctuarySession } from "@/lib/sanctuary-auth";
+import { getConfiguredFromAddress, sendEmail } from "@/lib/email";
 
 const ADMIN_PASSCODE = process.env.ADMIN_PASSCODE ?? "";
 const COOKIE_NAME = "ethiodox_admin_session";
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL?.replace(/\/$/, "");
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-const RESEND_API_KEY = process.env.RESEND_API_KEY ?? "";
-const RESEND_FROM_EMAIL = process.env.RESEND_FROM_EMAIL ?? "";
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
 type Session = {
@@ -88,14 +87,11 @@ async function listActiveSubscribers() {
 }
 
 async function sendNewsletterEmail(post: ArticleRow) {
-  if (!RESEND_API_KEY || !RESEND_FROM_EMAIL) {
-    throw new Error("Newsletter email is not configured. Set RESEND_API_KEY and RESEND_FROM_EMAIL.");
-  }
-
   const subscribers = await listActiveSubscribers();
   if (subscribers.length === 0) return 0;
-  const fromAddressMatch = RESEND_FROM_EMAIL.match(/<([^>]+)>/);
-  const fromAddress = fromAddressMatch?.[1] ?? RESEND_FROM_EMAIL;
+  const fromAddressRaw = getConfiguredFromAddress();
+  const fromAddressMatch = fromAddressRaw.match(/<([^>]+)>/);
+  const fromAddress = fromAddressMatch?.[1] ?? fromAddressRaw;
 
   const postUrl = `${SITE_URL.replace(/\/$/, "")}/blog/${post.slug}`;
   const subject = `${post.title} | Ethiodox Blog`;
@@ -119,28 +115,15 @@ Read: ${postUrl}
 
   let sent = 0;
   for (const subscriber of subscribers) {
-    const response = await fetch("https://api.resend.com/emails", {
-      method: "POST",
+    await sendEmail({
+      to: subscriber.email,
+      subject,
+      html,
+      text: plainText,
       headers: {
-        Authorization: `Bearer ${RESEND_API_KEY}`,
-        "Content-Type": "application/json",
+        "List-Unsubscribe": `<mailto:${fromAddress}?subject=unsubscribe>`,
       },
-      body: JSON.stringify({
-        from: RESEND_FROM_EMAIL,
-        to: [subscriber.email],
-        subject,
-        html,
-        text: plainText,
-        headers: {
-          "List-Unsubscribe": `<mailto:${fromAddress}?subject=unsubscribe>`,
-        },
-      }),
     });
-
-    if (!response.ok) {
-      const body = await response.text();
-      throw new Error(body || "Failed to send newsletter email.");
-    }
 
     sent += 1;
   }

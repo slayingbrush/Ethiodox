@@ -5,13 +5,12 @@ import {
   normalizeContributorLogin,
   verifySanctuarySession,
 } from "@/lib/sanctuary-auth";
+import { sendEmail } from "@/lib/email";
 
 const ADMIN_PASSCODE = process.env.ADMIN_PASSCODE ?? "";
 const COOKIE_NAME = "ethiodox_admin_session";
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL?.replace(/\/$/, "");
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-const RESEND_API_KEY = process.env.RESEND_API_KEY ?? "";
-const RESEND_FROM_EMAIL = process.env.RESEND_FROM_EMAIL ?? "";
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
 type ContributorRow = {
@@ -115,10 +114,6 @@ async function sendCredentialsEmail(input: {
   username: string;
   password: string;
 }) {
-  if (!RESEND_API_KEY || !RESEND_FROM_EMAIL) {
-    throw new Error("Email provider is not configured. Set RESEND_API_KEY and RESEND_FROM_EMAIL.");
-  }
-
   const loginUrl = `${SITE_URL.replace(/\/$/, "")}/sanctuary`;
   const subject = "Your Ethiodox Blog Editor Login";
   const text = `Hi ${input.name},
@@ -146,25 +141,12 @@ For security, please log in and start using it right away.
     </div>
   `;
 
-  const response = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${RESEND_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      from: RESEND_FROM_EMAIL,
-      to: [input.toEmail],
-      subject,
-      html,
-      text,
-    }),
+  await sendEmail({
+    to: input.toEmail,
+    subject,
+    html,
+    text,
   });
-
-  if (!response.ok) {
-    const body = await response.text();
-    throw new Error(body || "Failed to send credentials email.");
-  }
 }
 
 export async function GET(req: NextRequest) {
