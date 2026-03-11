@@ -117,7 +117,65 @@ for select
 using (true);
 ```
 
-## 4) Important Security Note
+## 4) Storage Buckets (Required for Image Uploads)
+
+If you want editor profile photos and blog cover image uploads to work, run:
+
+```sql
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values
+  ('editor-photos', 'editor-photos', true, 5242880, array['image/jpeg', 'image/png', 'image/webp', 'image/gif']),
+  ('blog-images', 'blog-images', true, 10485760, array['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
+on conflict (id) do update
+set
+  public = excluded.public,
+  file_size_limit = excluded.file_size_limit,
+  allowed_mime_types = excluded.allowed_mime_types;
+
+drop policy if exists "storage_public_read_editor_photos" on storage.objects;
+create policy "storage_public_read_editor_photos"
+on storage.objects for select to public
+using (bucket_id = 'editor-photos');
+
+drop policy if exists "storage_public_insert_editor_photos" on storage.objects;
+create policy "storage_public_insert_editor_photos"
+on storage.objects for insert to public
+with check (bucket_id = 'editor-photos');
+
+drop policy if exists "storage_public_update_editor_photos" on storage.objects;
+create policy "storage_public_update_editor_photos"
+on storage.objects for update to public
+using (bucket_id = 'editor-photos')
+with check (bucket_id = 'editor-photos');
+
+drop policy if exists "storage_public_delete_editor_photos" on storage.objects;
+create policy "storage_public_delete_editor_photos"
+on storage.objects for delete to public
+using (bucket_id = 'editor-photos');
+
+drop policy if exists "storage_public_read_blog_images" on storage.objects;
+create policy "storage_public_read_blog_images"
+on storage.objects for select to public
+using (bucket_id = 'blog-images');
+
+drop policy if exists "storage_public_insert_blog_images" on storage.objects;
+create policy "storage_public_insert_blog_images"
+on storage.objects for insert to public
+with check (bucket_id = 'blog-images');
+
+drop policy if exists "storage_public_update_blog_images" on storage.objects;
+create policy "storage_public_update_blog_images"
+on storage.objects for update to public
+using (bucket_id = 'blog-images')
+with check (bucket_id = 'blog-images');
+
+drop policy if exists "storage_public_delete_blog_images" on storage.objects;
+create policy "storage_public_delete_blog_images"
+on storage.objects for delete to public
+using (bucket_id = 'blog-images');
+```
+
+## 5) Important Security Note
 
 Current admin login uses a client-side passcode (`NEXT_PUBLIC_ADMIN_PASSCODE`) and simple anon-key policies.
 

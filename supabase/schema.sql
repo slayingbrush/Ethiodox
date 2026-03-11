@@ -135,14 +135,18 @@ create table if not exists public.articles (
   editor_id uuid references public.editors(id) on delete set null,
   tags text[] not null default '{}',
   cover_image_url text,
+  display_order bigint not null default 0,
   published boolean not null default true,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
 
+alter table public.articles add column if not exists display_order bigint not null default 0;
+
 create index if not exists articles_editor_id_idx on public.articles (editor_id);
 create index if not exists articles_category_idx on public.articles (category);
 create index if not exists articles_created_at_idx on public.articles (created_at desc);
+create index if not exists articles_display_order_idx on public.articles (display_order desc);
 
 alter table public.articles enable row level security;
 
@@ -220,3 +224,74 @@ on public.site_pages for insert with check (true);
 drop policy if exists "site_pages_update_all" on public.site_pages;
 create policy "site_pages_update_all"
 on public.site_pages for update using (true);
+
+-- ============================================================
+-- Storage buckets for blog/editor images
+-- ============================================================
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values
+  ('editor-photos', 'editor-photos', true, 5242880, array['image/jpeg', 'image/png', 'image/webp', 'image/gif']),
+  ('blog-images', 'blog-images', true, 10485760, array['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
+on conflict (id) do update
+set
+  public = excluded.public,
+  file_size_limit = excluded.file_size_limit,
+  allowed_mime_types = excluded.allowed_mime_types;
+
+drop policy if exists "storage_public_read_editor_photos" on storage.objects;
+create policy "storage_public_read_editor_photos"
+on storage.objects
+for select
+to public
+using (bucket_id = 'editor-photos');
+
+drop policy if exists "storage_public_insert_editor_photos" on storage.objects;
+create policy "storage_public_insert_editor_photos"
+on storage.objects
+for insert
+to public
+with check (bucket_id = 'editor-photos');
+
+drop policy if exists "storage_public_update_editor_photos" on storage.objects;
+create policy "storage_public_update_editor_photos"
+on storage.objects
+for update
+to public
+using (bucket_id = 'editor-photos')
+with check (bucket_id = 'editor-photos');
+
+drop policy if exists "storage_public_delete_editor_photos" on storage.objects;
+create policy "storage_public_delete_editor_photos"
+on storage.objects
+for delete
+to public
+using (bucket_id = 'editor-photos');
+
+drop policy if exists "storage_public_read_blog_images" on storage.objects;
+create policy "storage_public_read_blog_images"
+on storage.objects
+for select
+to public
+using (bucket_id = 'blog-images');
+
+drop policy if exists "storage_public_insert_blog_images" on storage.objects;
+create policy "storage_public_insert_blog_images"
+on storage.objects
+for insert
+to public
+with check (bucket_id = 'blog-images');
+
+drop policy if exists "storage_public_update_blog_images" on storage.objects;
+create policy "storage_public_update_blog_images"
+on storage.objects
+for update
+to public
+using (bucket_id = 'blog-images')
+with check (bucket_id = 'blog-images');
+
+drop policy if exists "storage_public_delete_blog_images" on storage.objects;
+create policy "storage_public_delete_blog_images"
+on storage.objects
+for delete
+to public
+using (bucket_id = 'blog-images');

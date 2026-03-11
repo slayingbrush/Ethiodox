@@ -22,6 +22,7 @@ type BlogCard = {
   excerpt: string;
   tags: string[];
   createdAt: string;
+  displayOrder: number;
   coverImageUrl: string | null;
   authorName: string;
   authorSlug: string;
@@ -48,6 +49,7 @@ async function loadBlogs(): Promise<BlogCard[]> {
       excerpt: post.excerpt,
       tags: post.tags,
       createdAt: post.date,
+      displayOrder: 0,
       coverImageUrl: null,
       authorName: post.author,
       authorSlug: post.author.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""),
@@ -64,6 +66,7 @@ async function loadBlogs(): Promise<BlogCard[]> {
       excerpt: post.excerpt,
       tags: post.tags,
       createdAt: post.created_at,
+      displayOrder: post.display_order ?? 0,
       coverImageUrl: post.cover_image_url,
       authorName: post.editors?.name ?? "Ethiodox Team",
       authorSlug: post.editors?.slug ?? "ethiodox-team",
@@ -87,7 +90,7 @@ export default async function BlogPage({ searchParams }: { searchParams: SearchP
   const filteredBlogs = allBlogs
     .filter((post) => (type ? post.type === type : true))
     .filter((post) => (author ? post.authorSlug === author : true))
-    .sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt));
+    .sort((a, b) => (b.displayOrder - a.displayOrder) || (+new Date(b.createdAt) - +new Date(a.createdAt)));
 
   return (
     <div className="py-16">

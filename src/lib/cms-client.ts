@@ -50,6 +50,7 @@ export interface CmsArticle {
   editor_id: string | null;
   tags: string[];
   cover_image_url: string | null;
+  display_order?: number;
   published: boolean;
   created_at: string;
   updated_at: string;
@@ -244,26 +245,26 @@ export async function deleteEditor(id: string) {
 
 export async function listPublishedArticles() {
   return cmsFetch<CmsArticle[]>(
-    "/rest/v1/articles?select=id,title,slug,category,excerpt,content,editor_id,tags,cover_image_url,published,created_at,updated_at,editors(name,slug,photo_url)&published=eq.true&order=created_at.desc"
+    "/rest/v1/articles?select=id,title,slug,category,excerpt,content,editor_id,tags,cover_image_url,display_order,published,created_at,updated_at,editors(name,slug,photo_url)&published=eq.true&order=display_order.desc,created_at.desc"
   );
 }
 
 export async function listAllArticles() {
   return cmsFetch<CmsArticle[]>(
-    "/rest/v1/articles?select=id,title,slug,category,excerpt,content,editor_id,tags,cover_image_url,published,created_at,updated_at,editors(name,slug,photo_url)&order=created_at.desc"
+    "/rest/v1/articles?select=id,title,slug,category,excerpt,content,editor_id,tags,cover_image_url,display_order,published,created_at,updated_at,editors(name,slug,photo_url)&order=display_order.desc,created_at.desc"
   );
 }
 
 export async function getArticleBySlug(slug: string) {
   const rows = await cmsFetch<CmsArticle[]>(
-    `/rest/v1/articles?select=id,title,slug,category,excerpt,content,editor_id,tags,cover_image_url,published,created_at,updated_at,editors(name,slug,photo_url)&slug=eq.${encodeURIComponent(slug)}&limit=1`
+    `/rest/v1/articles?select=id,title,slug,category,excerpt,content,editor_id,tags,cover_image_url,display_order,published,created_at,updated_at,editors(name,slug,photo_url)&slug=eq.${encodeURIComponent(slug)}&limit=1`
   );
   return rows[0] ?? null;
 }
 
 export async function listArticlesByEditor(editorId: string) {
   return cmsFetch<CmsArticle[]>(
-    `/rest/v1/articles?select=id,title,slug,category,excerpt,created_at,tags,cover_image_url,published,editors(name,slug,photo_url)&editor_id=eq.${encodeURIComponent(editorId)}&published=eq.true&order=created_at.desc`
+    `/rest/v1/articles?select=id,title,slug,category,excerpt,created_at,tags,cover_image_url,display_order,published,editors(name,slug,photo_url)&editor_id=eq.${encodeURIComponent(editorId)}&published=eq.true&order=display_order.desc,created_at.desc`
   );
 }
 
@@ -342,7 +343,22 @@ export async function uploadImage(bucket: string, fileName: string, file: File) 
 
   if (!response.ok) {
     const text = await response.text();
-    throw new Error(text || "Image upload failed.");
+    let message = text;
+
+    try {
+      const parsed = JSON.parse(text) as { message?: string } | null;
+      if (parsed?.message) {
+        message = parsed.message;
+      }
+    } catch {
+      // Keep raw text if response is not JSON.
+    }
+
+    if (message.toLowerCase().includes("bucket not found")) {
+      throw new Error(`Storage bucket "${bucket}" is missing. Create "${bucket}" in Supabase Storage, then try again.`);
+    }
+
+    throw new Error(message || "Image upload failed.");
   }
 
   return getPublicImageUrl(bucket, fileName);

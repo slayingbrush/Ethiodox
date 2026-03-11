@@ -53,6 +53,7 @@ export default function SanctuaryBlogsPage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [reordering, setReordering] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
 
   const isWriter = session?.role === "writer";
@@ -133,6 +134,18 @@ export default function SanctuaryBlogsPage() {
         .split(",")
         .map((tag) => tag.trim())
         .filter(Boolean);
+
+      if (form.published) {
+        if (form.excerpt.trim().length < 30) {
+          throw new Error("Excerpt must be at least 30 characters before publishing.");
+        }
+        if (form.content.trim().length < 120) {
+          throw new Error("Content must be at least 120 characters before publishing.");
+        }
+        if (tags.length === 0) {
+          throw new Error("Add at least one tag before publishing.");
+        }
+      }
 
       let coverImageUrl = form.coverImageUrl.trim() || null;
       if (coverImageFile) {
@@ -218,6 +231,45 @@ export default function SanctuaryBlogsPage() {
       if (editingId === article.id) resetForm();
     } catch (err) {
       setStatus(err instanceof Error ? err.message : "Failed to delete blog post.");
+    }
+  }
+
+  async function handleReorder(articleId: string, direction: "up" | "down") {
+    if (session?.role !== "admin") return;
+
+    const currentIndex = articles.findIndex((article) => article.id === articleId);
+    if (currentIndex < 0) return;
+
+    const targetIndex = direction === "up" ? currentIndex - 1 : currentIndex + 1;
+    if (targetIndex < 0 || targetIndex >= articles.length) return;
+
+    const reordered = [...articles];
+    const [moved] = reordered.splice(currentIndex, 1);
+    reordered.splice(targetIndex, 0, moved);
+
+    setReordering(articleId);
+    setStatus(null);
+    setArticles(reordered);
+
+    try {
+      const res = await fetch("/api/sanctuary/blogs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          mode: "reorder",
+          order: reordered.map((article) => article.id),
+        }),
+      });
+      const payload = await res.json().catch(() => null);
+      if (!res.ok) throw new Error(payload?.error ?? "Failed to reorder blog posts.");
+
+      setStatus("Blog order updated.");
+      await refreshArticles();
+    } catch (err) {
+      setStatus(err instanceof Error ? err.message : "Failed to reorder blog posts.");
+      await refreshArticles();
+    } finally {
+      setReordering(null);
     }
   }
 
@@ -382,6 +434,27 @@ export default function SanctuaryBlogsPage() {
                       <Link href={`/blog/${article.slug}`} className="text-sm hover:underline" target="_blank">
                         View
                       </Link>
+                      {session?.role === "admin" && (
+                        <>
+                          <button
+                            onClick={() => handleReorder(article.id, "up")}
+                            disabled={reordering === article.id || managedArticles[0]?.id === article.id}
+                            className="text-sm text-[var(--color-text-muted)] hover:underline disabled:opacity-40"
+                          >
+                            Move Up
+                          </button>
+                          <button
+                            onClick={() => handleReorder(article.id, "down")}
+                            disabled={
+                              reordering === article.id ||
+                              managedArticles[managedArticles.length - 1]?.id === article.id
+                            }
+                            className="text-sm text-[var(--color-text-muted)] hover:underline disabled:opacity-40"
+                          >
+                            Move Down
+                          </button>
+                        </>
+                      )}
                       <button onClick={() => startEdit(article)} className="text-sm text-[var(--color-primary)] hover:underline">
                         Edit
                       </button>

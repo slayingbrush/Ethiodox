@@ -14,8 +14,47 @@ import {
 import { lessons } from "@/data/lessons";
 import { prayers } from "@/data/prayers";
 import { blogPosts } from "@/data/blog";
+import { isCmsConfigured, listPublishedArticles } from "@/lib/cms-client";
 
-export default function HomePage() {
+type LatestHomeBlog = {
+  title: string;
+  slug: string;
+  excerpt: string;
+  category: string;
+  author: string;
+};
+
+async function loadLatestBlog(): Promise<LatestHomeBlog | null> {
+  if (!isCmsConfigured()) {
+    const fallback = [...blogPosts].sort((a, b) => +new Date(b.date) - +new Date(a.date))[0];
+    if (!fallback) return null;
+    return {
+      title: fallback.title,
+      slug: fallback.slug,
+      excerpt: fallback.excerpt,
+      category: fallback.category,
+      author: fallback.author,
+    };
+  }
+
+  try {
+    const posts = await listPublishedArticles();
+    const latest = [...posts].sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at))[0];
+    if (!latest) return null;
+    return {
+      title: latest.title,
+      slug: latest.slug,
+      excerpt: latest.excerpt,
+      category: latest.category,
+      author: latest.editors?.name ?? "Ethiodox Team",
+    };
+  } catch {
+    return null;
+  }
+}
+
+export default async function HomePage() {
+  const latestBlog = await loadLatestBlog();
   const featuredLessons = lessons.slice(0, 3);
   const featuredPrayers = prayers.slice(0, 4);
   const featuredBlogs = blogPosts.slice(0, 3);
@@ -78,6 +117,30 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Latest Blog Spotlight */}
+      {latestBlog && (
+        <section className="py-12 bg-white border-b border-[var(--color-border)]">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6">
+            <div className="max-w-4xl bg-[var(--color-cream)] border border-[var(--color-border)] rounded-xl p-6 md:p-8">
+              <p className="text-xs font-medium text-[var(--color-gold)] uppercase tracking-wider mb-2">Latest Blog</p>
+              <h2 className="font-serif text-2xl md:text-3xl font-bold text-[var(--color-primary)] mb-2">{latestBlog.title}</h2>
+              <p className="text-sm text-[var(--color-text-muted)] mb-3">
+                {latestBlog.category} · by {latestBlog.author}
+              </p>
+              <p className="text-[var(--color-text-muted)] leading-relaxed mb-5">
+                {latestBlog.excerpt.length > 220 ? `${latestBlog.excerpt.slice(0, 220)}...` : latestBlog.excerpt}
+              </p>
+              <Link
+                href={`/blog/${latestBlog.slug}`}
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-[var(--color-primary)] text-white rounded-lg font-medium hover:opacity-90 transition-opacity"
+              >
+                Read more
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Introduction Section */}
       <section className="py-20 bg-[var(--color-cream)]">
