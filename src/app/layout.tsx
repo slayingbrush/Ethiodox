@@ -11,6 +11,11 @@ export const metadata: Metadata = {
   },
   description:
     "Learn the Ethiopian Orthodox Tewahedo faith with clarity, depth, and reverence. Structured lessons, prayers, liturgy, saints, and apologetics.",
+  alternates: {
+    types: {
+      "application/rss+xml": "/feed.xml",
+    },
+  },
 };
 
 export default function RootLayout({

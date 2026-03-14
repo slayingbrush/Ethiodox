@@ -69,9 +69,18 @@ export default function Footer() {
             <p className="text-sm text-gray-500">
               &copy; {new Date().getFullYear()} Ethiodox. Glory to God.
             </p>
-            <p className="text-sm text-gray-500">
-              To the glory of the Father, and of the Son, and of the Holy Spirit.
-            </p>
+            <div className="flex items-center gap-4">
+              <a
+                href="/feed.xml"
+                className="text-sm text-gray-500 hover:text-white transition-colors"
+                title="RSS Feed"
+              >
+                RSS Feed
+              </a>
+              <p className="text-sm text-gray-500">
+                To the glory of the Father, and of the Son, and of the Holy Spirit.
+              </p>
+            </div>
           </div>
         </div>
       </div>
