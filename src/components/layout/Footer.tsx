@@ -16,6 +16,7 @@ const footerLinks = {
   Explore: [
     { href: "/defend", label: "Defend the Faith" },
     { href: "/blog", label: "Blog" },
+    { href: "https://ahadumengesha.substack.com/subscribe", label: "Subscribe (Substack)" },
     { href: "/editors", label: "Editors" },
     { href: "/about", label: "About" },
   ],
@@ -51,6 +52,7 @@ export default function Footer() {
                   <li key={link.href}>
                     <Link
                       href={link.href}
+                      {...(link.href.startsWith("http") ? { target: "_blank", rel: "noopener noreferrer" } : {})}
                       className="text-sm text-gray-400 hover:text-white transition-colors"
                     >
                       {link.label}

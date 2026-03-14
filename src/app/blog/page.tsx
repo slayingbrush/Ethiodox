@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Newspaper } from "lucide-react";
+import { Newspaper, Mail } from "lucide-react";
 import { blogPosts as fallbackBlogPosts } from "@/data/blog";
 import { isCmsConfigured, listPublishedArticles } from "@/lib/cms-client";
 import type { Metadata } from "next";
@@ -190,6 +190,24 @@ export default async function BlogPage({ searchParams }: { searchParams: SearchP
             ))}
           </div>
         )}
+
+        {/* Substack CTA */}
+        <div className="mt-12 bg-[var(--color-primary)] rounded-xl p-8 text-center text-white">
+          <Mail className="w-10 h-10 text-[var(--color-gold)] mx-auto mb-4" />
+          <h2 className="font-serif text-2xl font-bold mb-2">Never miss a post</h2>
+          <p className="text-white/70 max-w-lg mx-auto mb-6">
+            Subscribe on Substack and get new blog posts delivered to your inbox.
+          </p>
+          <a
+            href="https://ahadumengesha.substack.com/subscribe"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-[var(--color-gold)] text-[#1A1A1A] font-semibold rounded-lg hover:bg-[var(--color-gold-light)] transition-colors"
+          >
+            <Mail className="w-5 h-5" />
+            Subscribe on Substack
+          </a>
+        </div>
 
       </div>
     </div>
