@@ -1,7 +1,7 @@
 import { blogPosts } from "@/data/blog";
 import { isCmsConfigured, listPublishedArticles } from "@/lib/cms-client";
 
-const SITE_URL = "https://ethiodox.com";
+const SITE_URL = "https://ethiodox.vercel.app";
 
 function escapeXml(str: string): string {
   return str
