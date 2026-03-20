@@ -16,6 +16,11 @@ type EditorProfile = {
   active: boolean;
 };
 
+type SanctuarySession = {
+  role: "admin" | "writer";
+  editorId: string | null;
+};
+
 function buildHeaders(extra?: HeadersInit): HeadersInit {
   return {
     apikey: SUPABASE_ANON_KEY ?? "",
@@ -45,22 +50,38 @@ async function cmsFetch<T>(path: string, init?: RequestInit): Promise<T> {
   return (await response.json()) as T;
 }
 
-async function getEditorForSession(req: NextRequest) {
+async function getSession(req: NextRequest): Promise<SanctuarySession | null> {
   const token = req.cookies.get(COOKIE_NAME)?.value ?? "";
   const session = await verifySanctuarySession(token, ADMIN_PASSCODE);
-  if (!session || session.role !== "writer" || !session.editorId) return null;
-  return session.editorId;
+  if (!session) return null;
+  return {
+    role: session.role,
+    editorId: session.editorId,
+  };
+}
+
+async function getEditorProfile(editorId: string) {
+  const rows = await cmsFetch<EditorProfile[]>(
+    `/rest/v1/editors?select=id,name,slug,bio,photo_url,links,active&id=eq.${encodeURIComponent(editorId)}&limit=1`
+  );
+  return rows[0] ?? null;
 }
 
 export async function GET(req: NextRequest) {
-  const editorId = await getEditorForSession(req);
-  if (!editorId) return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+  const session = await getSession(req);
+  if (!session) return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+
+  const requestedEditorId = req.nextUrl.searchParams.get("editorId")?.trim() ?? "";
+  const editorId =
+    session.role === "admin" && requestedEditorId
+      ? requestedEditorId
+      : session.role === "writer"
+        ? session.editorId ?? ""
+        : "";
+  if (!editorId) return NextResponse.json({ error: "Editor profile not found." }, { status: 404 });
 
   try {
-    const rows = await cmsFetch<EditorProfile[]>(
-      `/rest/v1/editors?select=id,name,slug,bio,photo_url,links,active&id=eq.${encodeURIComponent(editorId)}&limit=1`
-    );
-    const profile = rows[0] ?? null;
+    const profile = await getEditorProfile(editorId);
     if (!profile) return NextResponse.json({ error: "Editor profile not found." }, { status: 404 });
 
     return NextResponse.json(profile);
@@ -73,15 +94,27 @@ export async function GET(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
-  const editorId = await getEditorForSession(req);
-  if (!editorId) return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+  const session = await getSession(req);
+  if (!session) return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
 
   const body = await req.json().catch(() => null);
+  const requestedEditorId = typeof body?.editorId === "string" ? body.editorId.trim() : "";
+  const editorId =
+    session.role === "admin"
+      ? requestedEditorId
+      : session.role === "writer"
+        ? session.editorId ?? ""
+        : "";
+  if (!editorId) {
+    return NextResponse.json({ error: "Editor id is required." }, { status: 400 });
+  }
+
   const name = typeof body?.name === "string" ? body.name.trim() : "";
   const bio = typeof body?.bio === "string" ? body.bio.trim() : "";
   const photoUrl =
     body?.photo_url === null || typeof body?.photo_url === "string" ? body.photo_url : undefined;
   const linksInput = body?.links;
+  const active = body?.active;
 
   if (!name) {
     return NextResponse.json({ error: "Name is required." }, { status: 400 });
@@ -107,10 +140,10 @@ export async function PATCH(req: NextRequest) {
         bio,
         photo_url: photoUrl,
         links,
+        ...(session.role === "admin" && typeof active === "boolean" ? { active } : {}),
       }),
     });
 
-    // Keep contributor display name aligned with profile name.
     await cmsFetch<null>(`/rest/v1/article_contributors?editor_id=eq.${encodeURIComponent(editorId)}`, {
       method: "PATCH",
       headers: buildHeaders({ Prefer: "return=minimal" }),

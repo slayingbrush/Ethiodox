@@ -21,11 +21,29 @@ type EditorAccess = {
   editors?: { id: string; name: string; slug: string; photo_url: string | null } | null;
 };
 
+type EditorProfileForm = {
+  editorId: string;
+  name: string;
+  slug: string;
+  bio: string;
+  photo_url: string;
+  active: boolean;
+};
+
 const defaultEditorForm = {
   name: "",
   bio: "",
   linkLabel: "",
   linkUrl: "",
+  active: true,
+};
+
+const defaultEditForm: EditorProfileForm = {
+  editorId: "",
+  name: "",
+  slug: "",
+  bio: "",
+  photo_url: "",
   active: true,
 };
 
@@ -45,8 +63,12 @@ export default function ManageEditorsPage() {
   const [editorForm, setEditorForm] = useState(defaultEditorForm);
   const [links, setLinks] = useState<Record<string, string>>({});
   const [photo, setPhoto] = useState<File | null>(null);
+  const [editForm, setEditForm] = useState<EditorProfileForm>(defaultEditForm);
+  const [editLinks, setEditLinks] = useState<Record<string, string>>({});
+  const [editPhotoFile, setEditPhotoFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [savingEdit, setSavingEdit] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [latestCredentials, setLatestCredentials] = useState<{ username: string; password: string } | null>(null);
 
@@ -97,6 +119,24 @@ export default function ManageEditorsPage() {
     });
   }
 
+  function addEditLink() {
+    if (editForm.name && editLinks && editorForm) {
+      const label = editorForm.linkLabel.trim();
+      const url = editorForm.linkUrl.trim();
+      if (!label || !url) return;
+      setEditLinks((prev) => ({ ...prev, [label]: url }));
+      setEditorForm((prev) => ({ ...prev, linkLabel: "", linkUrl: "" }));
+    }
+  }
+
+  function removeEditLink(label: string) {
+    setEditLinks((prev) => {
+      const copy = { ...prev };
+      delete copy[label];
+      return copy;
+    });
+  }
+
   async function provisionAccess(editorId: string, rotatePassword = false) {
     const res = await fetch("/api/sanctuary/contributors", {
       method: "POST",
@@ -112,6 +152,29 @@ export default function ManageEditorsPage() {
       temporaryPassword: String(data?.temporaryPassword ?? ""),
       message: typeof data?.message === "string" ? data.message : null,
     };
+  }
+
+  function startEditEditor(editor: Editor) {
+    setEditForm({
+      editorId: editor.id,
+      name: editor.name,
+      slug: editor.slug,
+      bio: editor.bio,
+      photo_url: editor.photo_url ?? "",
+      active: editor.active,
+    });
+    setEditLinks(editor.links ?? {});
+    setEditPhotoFile(null);
+    setEditorForm((prev) => ({ ...prev, linkLabel: "", linkUrl: "" }));
+    setStatus(null);
+    setLatestCredentials(null);
+  }
+
+  function resetEditorEdit() {
+    setEditForm(defaultEditForm);
+    setEditLinks({});
+    setEditPhotoFile(null);
+    setEditorForm((prev) => ({ ...prev, linkLabel: "", linkUrl: "" }));
   }
 
   async function handleCreateEditor(e: React.FormEvent) {
@@ -163,10 +226,55 @@ export default function ManageEditorsPage() {
     }
   }
 
+  async function handleSaveEditorChanges(e: React.FormEvent) {
+    e.preventDefault();
+    if (!editForm.editorId) return;
+
+    setSavingEdit(true);
+    setStatus(null);
+    setLatestCredentials(null);
+
+    try {
+      let nextPhotoUrl = editForm.photo_url.trim() || null;
+      if (editPhotoFile) {
+        const ext = editPhotoFile.name.split(".").pop() ?? "jpg";
+        nextPhotoUrl = await uploadImage("editor-photos", `${editForm.slug}-${Date.now()}.${ext}`, editPhotoFile);
+      }
+
+      const res = await fetch("/api/sanctuary/editor-profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          editorId: editForm.editorId,
+          name: editForm.name.trim(),
+          bio: editForm.bio.trim(),
+          photo_url: nextPhotoUrl,
+          links: editLinks,
+          active: editForm.active,
+        }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok) {
+        throw new Error(data?.error ?? "Failed to update editor profile.");
+      }
+
+      setStatus("Editor profile updated.");
+      await Promise.all([loadEditors(), loadAccessAccounts()]);
+      resetEditorEdit();
+    } catch (err) {
+      setStatus(err instanceof Error ? err.message : "Failed to update editor profile.");
+    } finally {
+      setSavingEdit(false);
+    }
+  }
+
   async function handleDeleteEditor(id: string) {
     if (!confirm("Delete this editor and revoke login access?")) return;
     try {
       await deleteEditor(id);
+      if (editForm.editorId === id) {
+        resetEditorEdit();
+      }
       setStatus("Editor deleted.");
       await Promise.all([loadEditors(), loadAccessAccounts()]);
     } catch (err) {
@@ -298,6 +406,118 @@ export default function ManageEditorsPage() {
           </form>
         </section>
 
+        <section className="bg-white border border-[var(--color-border)] rounded-xl p-6 mb-8">
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+            <div>
+              <h2 className="font-serif text-xl font-semibold">Edit Existing Editor</h2>
+              <p className="text-sm text-[var(--color-text-muted)] mt-1">
+                Admin can update any editor profile after it has been created.
+              </p>
+            </div>
+            {editForm.editorId && (
+              <button
+                type="button"
+                onClick={resetEditorEdit}
+                className="px-3 py-2 rounded-lg border border-[var(--color-border)] text-sm"
+              >
+                Cancel Edit
+              </button>
+            )}
+          </div>
+
+          {!editForm.editorId ? (
+            <p className="text-sm text-[var(--color-text-muted)]">
+              Choose an editor from the list below and click Edit Profile.
+            </p>
+          ) : (
+            <form onSubmit={handleSaveEditorChanges} className="grid gap-4">
+              <input
+                value={editForm.name}
+                onChange={(e) => setEditForm((prev) => ({ ...prev, name: e.target.value }))}
+                placeholder="Display name"
+                className="px-3 py-2 rounded-lg border border-[var(--color-border)]"
+                required
+              />
+              <input
+                value={editForm.slug}
+                className="px-3 py-2 rounded-lg border border-[var(--color-border)] bg-gray-50"
+                disabled
+              />
+              <textarea
+                value={editForm.bio}
+                onChange={(e) => setEditForm((prev) => ({ ...prev, bio: e.target.value }))}
+                placeholder="Short bio"
+                className="px-3 py-2 rounded-lg border border-[var(--color-border)] min-h-[140px]"
+                required
+              />
+
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm text-[var(--color-text-muted)] block mb-1">New profile photo</label>
+                  <input type="file" accept="image/*" onChange={(e) => setEditPhotoFile(e.target.files?.[0] ?? null)} />
+                </div>
+                <div>
+                  <label className="text-sm text-[var(--color-text-muted)] block mb-1">Or photo URL</label>
+                  <input
+                    value={editForm.photo_url}
+                    onChange={(e) => setEditForm((prev) => ({ ...prev, photo_url: e.target.value }))}
+                    placeholder="https://..."
+                    className="w-full px-3 py-2 rounded-lg border border-[var(--color-border)]"
+                  />
+                </div>
+              </div>
+
+              <div className="border border-[var(--color-border)] rounded-lg p-4">
+                <p className="text-sm font-medium mb-2">Links</p>
+                <div className="flex gap-2 mb-2">
+                  <input
+                    value={editorForm.linkLabel}
+                    onChange={(e) => setEditorForm((p) => ({ ...p, linkLabel: e.target.value }))}
+                    placeholder="Label"
+                    className="flex-1 px-3 py-1.5 rounded-lg border border-[var(--color-border)] text-sm"
+                  />
+                  <input
+                    value={editorForm.linkUrl}
+                    onChange={(e) => setEditorForm((p) => ({ ...p, linkUrl: e.target.value }))}
+                    placeholder="URL"
+                    className="flex-1 px-3 py-1.5 rounded-lg border border-[var(--color-border)] text-sm"
+                  />
+                  <button type="button" onClick={addEditLink} className="px-3 py-1.5 rounded-lg bg-[var(--color-cream)] text-sm">
+                    Add
+                  </button>
+                </div>
+                {Object.entries(editLinks).map(([label, url]) => (
+                  <div key={label} className="flex items-center justify-between text-sm py-1">
+                    <span>
+                      {label}: {url}
+                    </span>
+                    <button type="button" onClick={() => removeEditLink(label)} className="text-red-700 hover:underline text-xs">
+                      Remove
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              <label className="inline-flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={editForm.active}
+                  onChange={(e) => setEditForm((prev) => ({ ...prev, active: e.target.checked }))}
+                />
+                Active
+              </label>
+
+              <button
+                type="submit"
+                disabled={savingEdit}
+                className="w-fit px-4 py-2 rounded-lg bg-[var(--color-primary)] text-white disabled:opacity-60"
+              >
+                {savingEdit ? "Saving..." : "Save Editor Profile"}
+              </button>
+            </form>
+          )}
+        </section>
+
         {latestCredentials && (
           <section className="bg-amber-50 border border-amber-300 text-amber-900 rounded-xl p-6 mb-8">
             <h2 className="font-serif text-lg font-semibold mb-2">Generated Credentials</h2>
@@ -365,6 +585,12 @@ export default function ManageEditorsPage() {
                       {editor.active ? "Active" : "Inactive"} &middot; /{editor.slug}
                     </p>
                   </div>
+                  <button
+                    onClick={() => startEditEditor(editor)}
+                    className="text-sm text-[var(--color-primary)] hover:underline"
+                  >
+                    Edit Profile
+                  </button>
                   <button onClick={() => handleDeleteEditor(editor.id)} className="text-sm text-red-700 hover:underline">
                     Delete
                   </button>
